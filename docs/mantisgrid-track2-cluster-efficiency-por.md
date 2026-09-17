@@ -11,10 +11,15 @@ Track 2 should be treated as a cluster-behavior and business-impact problem: use
 Based on the event materials and discussion so far:
 
 - Track 2 is Cluster Efficiency.
-- Participants receive telemetry from one large cluster.
-- Participants receive API access to MantisGrid insights covering performance, uptime, and cost.
-- The challenge is to build an interactive dashboard that shows cluster behavior and identifies inefficiencies.
+- Participants receive four months of telemetry from a real GPU cluster.
+- The dataset covers 74,849 jobs, 195 users, and 594,000 GPU-hours.
+- Participants receive per-job data including GPUs, utilization, memory, power, queue, and outcome signals.
+- Participants receive access to the MantisGrid AI API, including 24 rules, 11,979 findings, root-cause analysis, and related insights.
+- Participants receive access to the MantisGrid AI MCP server, exposing the API as agent tools.
+- The challenge is to find the 20% of waste or inefficiency the CFO has been asked to cut.
+- The expected deliverables are a dashboard that comes up with one command, a chatbot or agent using MCP tools, headline numbers in a fixed format with ranges rather than single guesses, and a short report explaining what was found and how.
 - This track is more oriented toward data analysis, visualization, and translating infrastructure signals into business outcomes.
+- The track emphasis is data storytelling.
 
 ## Additional Working Information
 
@@ -69,9 +74,11 @@ The dashboard should help a user quickly understand:
 - Performance bottlenecks.
 - Uptime or reliability risks.
 - Cost inefficiencies.
+- The estimated 20% savings opportunity, expressed as a range with confidence.
 - Which workloads, nodes, jobs, GPUs, or resources deserve attention.
-- What business impact the inefficiency creates.
+- What business impact the inefficiency creates, with facts and judgments clearly labeled.
 - What action should be taken next.
+- How to drill down from a dollar figure to the underlying data.
 
 ## Architecture Summary
 
@@ -1014,8 +1021,11 @@ This is a proposed shape only. The actual structure should adapt once the provid
 ## Open Questions
 
 - What exact API endpoints and data objects are provided for Track 2?
-- What time range does the large cluster telemetry cover?
 - Are cost values provided directly, estimated, or expected to be calculated?
+- What fixed format is expected for headline numbers?
+- What confidence language or uncertainty ranges do judges expect?
+- Which MCP tools are available, and is MCP required for the chatbot or agent deliverable?
+- What one-command dashboard startup command should be supported?
 - What dimensions are available: namespace, team, workload, service, job, node, GPU, cluster, region, node pool?
 - Are uptime and performance insights precomputed by MantisGrid or derived from raw telemetry?
 - Are there known labels or expected findings for evaluation?
@@ -1027,25 +1037,28 @@ This is a proposed shape only. The actual structure should adapt once the provid
 
 ## Near-Term Build Sequence
 
-1. Confirm Track 2 API surface, data objects, dimensions, and judging criteria.
-2. Create or reuse the local Python project skeleton.
-3. Build the direct MantisGrid API client.
+1. Confirm Track 2 API surface, MCP tools, data objects, dimensions, judging criteria, and required fixed format for headline numbers.
+2. Create or reuse the local Python project skeleton with a one-command dashboard startup path.
+3. Build the direct MantisGrid API client and MCP-backed agent/tool adapter where useful.
 4. Cache representative API responses in DuckDB or Polars.
-5. Define derived analytics tables and the finding schema.
-6. Implement the first finding engine for utilization and cost.
-7. Build the Streamlit dashboard shell.
-8. Implement the overview page with top findings and scores.
-9. Add utilization, performance, reliability, and cost views.
-10. Add finding cards with evidence, impact, and recommendations.
-11. Add trace logging for each finding.
-12. Define the dynamic dashboard spec schema, metric catalog, entity catalog, and supported view types.
-13. Implement spec validation and safe rejection/fallback behavior.
-14. Add an LLM-guided dynamic insight workspace using structured specs.
-15. Define CandidateFindingSpec and implement LLM-assisted inefficiency discovery over bounded summaries.
-16. Add validation and promotion logic from candidate findings to dashboard findings.
-17. Tune thresholds, ranking, templates, dynamic spec prompts, and discovery prompts based on data quality and judge-facing usefulness.
-18. Add optional LLM summarization only after the deterministic dashboard, spec rendering path, and discovery validation path are solid.
+5. Define derived analytics tables and the finding schema around job, user, GPU, utilization, memory, power, queue, outcome, cost, and confidence.
+6. Implement first-pass headline numbers as ranges: total opportunity, likely savings band, top waste categories, and confidence level.
+7. Implement the first finding engine for utilization, queueing, memory, power, and cost.
+8. Build the Streamlit dashboard shell.
+9. Implement the overview page around 30-second executive actionability.
+10. Add drilldown from headline dollar figures to evidence tables and source jobs.
+11. Add utilization, performance, reliability, and cost views.
+12. Add finding cards with facts, judgments, evidence, impact, confidence, and recommendations.
+13. Add a short report generator explaining what was found and how.
+14. Add trace logging for each finding.
+15. Define the dynamic dashboard spec schema, metric catalog, entity catalog, and supported view types.
+16. Implement spec validation and safe rejection/fallback behavior.
+17. Add an MCP-assisted chatbot or agent for data questions and drilldowns.
+18. Define CandidateFindingSpec and implement LLM-assisted inefficiency discovery over bounded summaries.
+19. Add validation and promotion logic from candidate findings to dashboard findings.
+20. Tune thresholds, ranking, templates, dynamic spec prompts, and discovery prompts based on data quality and judge-facing usefulness.
+21. Add optional LLM summarization only after the deterministic dashboard, spec rendering path, and discovery validation path are solid.
 
 ## Current Decision
 
-The Plan of Record for Track 2 is to build a local Python analytics dashboard using direct MantisGrid API access, optional local caching, and Streamlit. The dashboard should identify cluster inefficiencies and translate them into operational and business impact across utilization, performance, uptime, and cost.
+The Plan of Record for Track 2 is to build a local Python analytics dashboard and MCP-assisted data agent using MantisGrid API access, optional local caching, and Streamlit. The dashboard should identify a credible 20% savings opportunity as ranged headline numbers, label facts versus judgments, support drilldown from business impact to source data, and translate cluster inefficiencies into operational and CFO-readable recommendations.

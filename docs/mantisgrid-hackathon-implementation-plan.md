@@ -16,6 +16,7 @@ Workspace update:
 - Remote: `https://github.com/arhrid/MantisGridClusterEfficiency.git`.
 - Repo currently contains planning docs only; no implementation has started yet.
 - Runtime decision: run locally with a Python environment, not Docker, unless later hackathon instructions require packaging.
+- Latest Track 2 event details are captured from `docs/IMG_7072.jpg`: four months of GPU-cluster data, 74,849 jobs, 195 users, 594,000 GPU-hours, MantisGrid API insights, MCP server tooling, and judging emphasis on data storytelling.
 
 Current docs:
 
@@ -58,9 +59,11 @@ Deliverables:
 
 - Captured start-of-hackathon update notes.
 - Inventory of available datasets, APIs, docs, and sample eval data.
+- Confirmed one-command dashboard startup expectation.
+- MantisGrid API and MCP tool inventory.
 - Confirmed local setup requirements.
 - List of assumptions that changed from the POR docs.
-- Updated open questions in Track 1 and Track 2 POR docs.
+- Updated open questions in the Track 2 POR doc.
 
 Acceptance criteria:
 
@@ -69,6 +72,7 @@ Acceptance criteria:
 - We know whether direct API access is possible.
 - We know whether MCP is required.
 - We know whether external LLM APIs are allowed.
+- We know the fixed format for headline numbers and how to express ranges and confidence.
 - We know whether judging criteria or deliverables changed.
 
 Validation:
