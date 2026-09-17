@@ -12,10 +12,11 @@ Status: planning.
 
 Workspace update:
 
-- Track 2 repo is cloned at `/Users/benchong/Work/Hackathon/MantisGridClusterEfficiency`.
+- Track 2 repo is cloned at `/Users/arhrid/antima-workspace/mantisgridinfra/mgce/MantisGridClusterEfficiency`.
 - Remote: `https://github.com/arhrid/MantisGridClusterEfficiency.git`.
 - Repo currently contains planning docs only; no implementation has started yet.
 - Runtime decision: run locally with a Python environment, not Docker, unless later hackathon instructions require packaging.
+- Track 2 slide details have been captured in the POR: four months of GPU cluster data, 74,849 jobs, 195 users, 594,000 GPU-hours, MantisGrid API/MCP access, 24 rules, 11,979 findings, root-cause analysis, and an emphasis on data storytelling.
 
 Current docs:
 
@@ -65,9 +66,9 @@ Deliverables:
 Acceptance criteria:
 
 - Humans have provided latest event instructions or confirmed there are none.
-- We know how data will be accessed.
+- We know how the four-month GPU cluster dataset will be accessed.
 - We know whether direct API access is possible.
-- We know whether MCP is required.
+- We know how to access the MantisGrid MCP server and whether MCP is required for judging.
 - We know whether external LLM APIs are allowed.
 - We know whether judging criteria or deliverables changed.
 
@@ -87,13 +88,14 @@ Status: `not_started`
 
 Objective:
 
-Create a reproducible local Python project skeleton with dependencies, config handling, and a simple smoke test. Do not start with Docker unless later hackathon instructions require it.
+Create a reproducible local Python project skeleton with dependencies, config handling, one-command dashboard startup, and a simple smoke test. Do not start with Docker unless later hackathon instructions require it.
 
 Deliverables:
 
 - Python package structure
 - Dependency file
 - Config directory
+- One-command dashboard entry point
 - Simple smoke test
 - Optional Docker packaging note only if required later
 

@@ -10,9 +10,14 @@ Track 2 should be treated as a cluster-behavior and business-impact problem: use
 
 Based on the event materials and discussion so far:
 
-- Track 2 is Cluster Efficiency.
-- Participants receive telemetry from one large cluster.
-- Participants receive API access to MantisGrid insights covering performance, uptime, and cost.
+- Track 2 is GPU Cluster Efficiency.
+- Participants receive four months of real GPU cluster data.
+- The slide describes 74,849 jobs, 195 users, and 594,000 GPU-hours.
+- The business target is to find the 20% of spend or usage the CFO has been told to cut.
+- Participants receive per-job data covering GPUs, utilization, memory, power, queue, and outcome.
+- Participants receive MantisGrid AI API access with 24 rules, 11,979 findings, and root-cause analysis.
+- Participants receive a business layer whose entries should be labeled as fact or judgment.
+- The MantisGrid AI MCP server exposes the whole API as agent tools.
 - The challenge is to build an interactive dashboard that shows cluster behavior and identifies inefficiencies.
 - This track is more oriented toward data analysis, visualization, and translating infrastructure signals into business outcomes.
 
@@ -21,11 +26,27 @@ Based on the event materials and discussion so far:
 Based on discussion so far:
 
 - MantisGrid APIs are expected to be available for accessing hackathon data or insights.
-- MCP support may be available or required, but the current plan is to run the project locally without Docker.
+- MCP support is expected for agent/chatbot access, but the current plan is to run the project locally without Docker.
 - Direct MantisGrid API calls may also be possible.
-- Direct API access should be the default design assumption; MCP should remain an optional adapter unless final instructions require it.
+- The challenge slide explicitly asks teams to build a chatbot or agent using MCP tools, so MCP should be treated as a first-class integration path for Track 2.
+- Direct API access can remain useful for deterministic ingestion and caching if final instructions allow it.
 
 These details should be confirmed against final event instructions, especially the API surface, authentication model, rate limits, and whether MCP is required, optional, or mainly provided as a convenience layer.
+
+## Slide-Captured Requirements
+
+The Track 2 challenge slide adds the following concrete deliverables and success signals:
+
+- Create a dashboard that comes up with one command.
+- Build a chatbot or agent using the MCP tools.
+- Report headline numbers in a fixed format.
+- Give ranges rather than single-point guesses.
+- Produce a short report explaining what was found and how.
+- Make the result actionable in 30 seconds for someone who is not an engineer.
+- Support drilldown from a dollar figure to the data behind it.
+- Say how sure the system is about each claim.
+- Be creative while staying evidence-backed.
+- Focus on data storytelling.
 
 ## Product Signals From MantisGrid
 
@@ -56,7 +77,7 @@ Track 2 is the "top layer" counterpart to Track 1:
 
 The strongest solution shape is:
 
-**Cluster telemetry -> derived analytics -> named efficiency findings -> evidence-backed recommendations -> interactive dashboard -> dynamic insight workspace**
+**GPU job telemetry -> derived analytics -> business-layer claims -> named efficiency findings -> evidence-backed recommendations -> one-command dashboard -> MCP-powered insight workspace**
 
 The infrastructure should stay simple and local:
 
@@ -69,9 +90,11 @@ The dashboard should help a user quickly understand:
 - Performance bottlenecks.
 - Uptime or reliability risks.
 - Cost inefficiencies.
+- Which cuts plausibly contribute to the target 20% reduction.
 - Which workloads, nodes, jobs, GPUs, or resources deserve attention.
 - What business impact the inefficiency creates.
 - What action should be taken next.
+- Which claims are facts, which are judgments, and how confident the system is.
 
 ## Architecture Summary
 
@@ -82,8 +105,8 @@ Mac laptop host
         |
         +-- Python analytics backend
         |     |
-        |     +-- Direct MantisGrid API client
-        |     +-- Optional MCP adapter
+        |     +-- MantisGrid MCP tool adapter
+        |     +-- Direct MantisGrid API client if allowed
         |     +-- Derived analytics layer
         |     +-- Finding and recommendation engine
         |     +-- Dynamic dashboard spec validator
@@ -117,7 +140,7 @@ Track 2 has three distinct intelligence layers:
 2. LLM-guided dynamic dashboarding:
    - User asks a natural-language question.
    - LLM maps the question into a structured dashboard or view spec.
-   - Backend validates, executes, and renders the result.
+   - Backend validates, executes through MCP or direct API/local cache, and renders the result.
 
 3. LLM-assisted inefficiency discovery:
    - System proactively asks what inefficiencies exist in the cluster data.
@@ -135,8 +158,8 @@ Use the same basic runtime shape as Track 1:
 - Mac laptop as host.
 - Local Python runtime.
 - Python implementation.
-- Direct MantisGrid API client as the default data path.
-- Optional MCP support only if useful or required.
+- MCP tool access as a first-class data and agent-tool path.
+- Direct MantisGrid API client as a useful secondary path if allowed by final instructions.
 - DuckDB or Polars for local data shaping and repeated analysis.
 - Streamlit for the interactive dashboard.
 
@@ -156,17 +179,20 @@ Expected inputs:
 - Workload/job metadata.
 - Node and cluster metadata.
 - GPU or accelerator metadata, if available.
+- Per-job GPUs, utilization, memory, power, queue, and outcome fields.
 - Cost data or cost estimates.
-- MantisGrid insight APIs covering performance, uptime, and cost.
+- MantisGrid AI API output covering 24 rules, 11,979 findings, and root-cause analysis.
+- Business-layer records labeled as fact or judgment.
 - Topology, ownership, namespace, team, service, node pool, or region dimensions if available.
 
 Implementation approach:
 
-- Build a direct Python client for the MantisGrid APIs.
+- Build an MCP adapter for MantisGrid API-backed agent tools.
+- Build a direct Python client for the MantisGrid APIs if final instructions allow it.
 - Cache API responses into DuckDB or Polars where useful.
 - Keep raw data access behind typed helper functions.
 - Build derived tables for dashboard views.
-- Treat MCP as an optional adapter, not the core design.
+- Keep MCP and direct API access behind shared data/query interfaces where practical.
 
 Potential derived tables:
 
@@ -203,7 +229,9 @@ estimated_severity:
 estimated_savings_or_risk_reduction:
 recommended_action:
 confidence:
+confidence_range:
 status:
+fact_or_judgment:
 ```
 
 Core finding categories:
@@ -234,9 +262,11 @@ Possible elements:
 - Uptime or availability score.
 - Performance risk score.
 - Estimated wasted spend or avoidable cost.
+- Estimated contribution toward the 20% CFO cut target.
 - Top 3 inefficiencies.
 - Top 3 recommended actions.
 - Recent anomaly or incident timeline.
+- Confidence ranges for headline numbers.
 
 ### Utilization
 
@@ -292,6 +322,21 @@ Possible views:
 - Over-provisioning estimate.
 - Potential savings from right-sizing.
 - Cost per successful job or unit of throughput if derivable.
+- Ranged savings estimates rather than single-point guesses.
+- Drilldown from each dollar figure to jobs, users, rules, findings, and assumptions.
+
+### Business Layer
+
+Purpose: make business-impact claims explicit and reviewable.
+
+Possible views:
+
+- Headline savings range.
+- CFO-cut progress against the 20% target.
+- Business-impact claims labeled as fact or judgment.
+- Confidence level for each claim.
+- Supporting data path for each claim.
+- Assumptions used for savings, efficiency, or risk estimates.
 
 ### Findings
 
@@ -339,6 +384,7 @@ Suggested navigation:
 - Performance.
 - Reliability.
 - Cost.
+- Business Layer.
 - Findings.
 
 ## LLM-Guided Dynamic Dashboarding
@@ -369,6 +415,7 @@ The two-layer experience:
 Example user questions:
 
 - Which workloads are wasting the most GPU?
+- What is the safest path to the CFO's 20% cut?
 - Show me nodes with high cost and low utilization.
 - Compare performance before and after 10am.
 - Where are we over-provisioned?
@@ -376,6 +423,7 @@ Example user questions:
 - Which recommendations would save the most cost without hurting uptime?
 - Explain why this node pool is ranked as inefficient.
 - Build a view of GPU idle cost by namespace.
+- Show the data behind this dollar figure.
 
 Allowed analysis intents:
 
@@ -400,6 +448,8 @@ The backend must own:
 - Data retrieval.
 - Chart rendering.
 - Numeric outputs.
+- Fixed-format headline outputs.
+- Ranged estimates and confidence labels.
 - Evidence IDs.
 - Trace logs.
 
@@ -962,8 +1012,8 @@ The initial value should come from crisp insights, useful drill-downs, clear evi
 Track 2 should reuse as much of the Track 1 foundation as practical:
 
 - Local Python runtime.
-- Direct MantisGrid API client.
-- Optional MCP adapter.
+- MantisGrid MCP adapter for agent/chatbot work.
+- Direct MantisGrid API client if allowed and useful for deterministic ingestion.
 - DuckDB or Polars cache.
 - Shared schemas for clusters, nodes, workloads, metrics, logs, traces, incidents, and findings.
 - Streamlit UI shell.
@@ -1014,30 +1064,35 @@ This is a proposed shape only. The actual structure should adapt once the provid
 ## Open Questions
 
 - What exact API endpoints and data objects are provided for Track 2?
-- What time range does the large cluster telemetry cover?
+- What is the exact access path for the four-month GPU cluster dataset?
 - Are cost values provided directly, estimated, or expected to be calculated?
 - What dimensions are available: namespace, team, workload, service, job, node, GPU, cluster, region, node pool?
 - Are uptime and performance insights precomputed by MantisGrid or derived from raw telemetry?
+- How should headline-number ranges be formatted for judging?
+- What confidence labels or uncertainty format should be used?
+- What is the expected short-report format?
 - Are there known labels or expected findings for evaluation?
 - How will judges score the dashboard: insight quality, UX, accuracy, performance, business impact, or novelty?
 - Are LLM APIs allowed or useful for Track 2 judging?
 - Are API rate limits relevant for dashboard refresh and batch analysis?
-- Is MCP required, optional, or a convenience layer?
+- Is MCP required for all interactive/agent access, or can direct API access be used for deterministic ingestion and caching?
 - How fresh should the dashboard be: static snapshot, manual refresh, or live polling?
 
 ## Near-Term Build Sequence
 
 1. Confirm Track 2 API surface, data objects, dimensions, and judging criteria.
 2. Create or reuse the local Python project skeleton.
-3. Build the direct MantisGrid API client.
-4. Cache representative API responses in DuckDB or Polars.
-5. Define derived analytics tables and the finding schema.
-6. Implement the first finding engine for utilization and cost.
-7. Build the Streamlit dashboard shell.
-8. Implement the overview page with top findings and scores.
-9. Add utilization, performance, reliability, and cost views.
-10. Add finding cards with evidence, impact, and recommendations.
-11. Add trace logging for each finding.
+3. Build the MantisGrid MCP adapter for agent/chatbot access.
+4. Build direct API access only if final instructions allow it and it helps deterministic ingestion.
+5. Cache representative MCP/API responses in DuckDB or Polars.
+6. Define derived analytics tables and the finding schema.
+7. Implement fixed-format headline numbers with ranges and confidence labels.
+8. Implement the first finding engine for utilization and cost.
+9. Build the Streamlit dashboard shell with a one-command startup path.
+10. Implement the overview page with top findings, scores, and CFO-cut progress.
+11. Add utilization, performance, reliability, cost, and business-layer views.
+12. Add finding cards with evidence, impact, recommendations, and fact-or-judgment labels.
+13. Add trace logging for each finding.
 12. Define the dynamic dashboard spec schema, metric catalog, entity catalog, and supported view types.
 13. Implement spec validation and safe rejection/fallback behavior.
 14. Add an LLM-guided dynamic insight workspace using structured specs.
