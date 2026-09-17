@@ -15,8 +15,9 @@ Workspace update:
 - Track 2 repo is cloned at `/Users/arhrid/antima-workspace/mantisgridinfra/mgce/MantisGridClusterEfficiency`.
 - Remote: `https://github.com/arhrid/MantisGridClusterEfficiency.git`.
 - Repo currently contains planning docs only; no implementation has started yet.
-- Runtime decision: run locally with a Python environment, not Docker, unless later hackathon instructions require packaging.
+- Runtime decision: develop locally where useful, but final Track 2 judging requires root-level Docker Compose and a dashboard served on `:3000`.
 - Latest Track 2 event details are captured from `docs/IMG_7072.jpg`: four months of GPU-cluster data, 74,849 jobs, 195 users, 594,000 GPU-hours, MantisGrid API insights, MCP server tooling, and judging emphasis on data storytelling.
+- Official repo cloned at `/Users/benchong/Work/Hackathon/hackathon-2026-official`; Track 2 source of truth is `track-2/`.
 
 Current docs:
 
@@ -36,6 +37,16 @@ At the start of the hackathon, Codex should ask the humans for the latest event 
 - Update this plan after each phase.
 - Do not commit or push unless explicitly asked.
 - At phase boundaries, provide validation results, known risks, and suggested commit message.
+
+## Team Coordination
+
+- Four people are working across the hackathon: two on Track 1 and two on Track 2.
+- Track 2 work should assume two human collaborators may be editing the repo at the same time.
+- Before any commit or push, check `git status`, fetch the latest remote state, and integrate remote work with a normal pull/rebase.
+- Do not force-push or rewrite shared history unless the whole team explicitly agrees.
+- Keep commits small and track-scoped so parallel work is easy to review and merge.
+- Avoid touching files outside the current phase unless needed for the task, especially shared docs and submission files.
+- When a push is rejected, stop and inspect the remote changes before retrying.
 
 ## Phase Status Legend
 
@@ -59,8 +70,9 @@ Deliverables:
 
 - Captured start-of-hackathon update notes.
 - Inventory of available datasets, APIs, docs, and sample eval data.
-- Confirmed one-command dashboard startup expectation.
+- Confirmed official `docker compose up` dashboard startup expectation.
 - MantisGrid API and MCP tool inventory.
+- Confirmed `claims.json`, `REPORT.md`, and root-level `docker-compose.yml` requirements.
 - Confirmed local setup requirements.
 - List of assumptions that changed from the POR docs.
 - Updated open questions in the Track 2 POR doc.
@@ -73,6 +85,7 @@ Acceptance criteria:
 - We know how to access the MantisGrid MCP server and whether MCP is required for judging.
 - We know whether external LLM APIs are allowed.
 - We know the fixed format for headline numbers and how to express ranges and confidence.
+- We know the dashboard must serve on `:3000`.
 - We know whether judging criteria or deliverables changed.
 
 Validation:
@@ -91,7 +104,7 @@ Status: `not_started`
 
 Objective:
 
-Create a reproducible local Python project skeleton with dependencies, config handling, one-command dashboard startup, and a simple smoke test. Do not start with Docker unless later hackathon instructions require it.
+Create a reproducible project skeleton around the official Track 2 API/data assets, with local development support and the required Docker Compose submission path.
 
 Deliverables:
 
@@ -100,18 +113,24 @@ Deliverables:
 - Config directory
 - One-command dashboard entry point
 - Simple smoke test
-- Optional Docker packaging note only if required later
+- Root-level `docker-compose.yml`
+- Root-level `claims.json`
+- Root-level `REPORT.md`
+- Dashboard service on `:3000`
 
 Acceptance criteria:
 
 - Local environment installs successfully.
 - Basic command runs on the host.
-- Project has clear entry points for Track 1 and/or Track 2.
+- Docker Compose brings up the dashboard on `:3000`.
+- Project has clear Track 2 entry points.
 
 Validation:
 
 - Install local dependencies.
 - Run smoke command.
+- Run `docker compose up`.
+- Run official claims/dashboard validation.
 
 Suggested commit message:
 

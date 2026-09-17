@@ -20,6 +20,11 @@ Based on the event materials and discussion so far:
 - The challenge is to find the 20% of waste or inefficiency the CFO has been asked to cut.
 - The challenge is to build an interactive dashboard that shows cluster behavior and identifies inefficiencies.
 - The expected deliverables are a dashboard that comes up with one command, a chatbot or agent using MCP tools, headline numbers in a fixed format with ranges rather than single guesses, and a short report explaining what was found and how.
+- The official repo is cloned at `/Users/benchong/Work/Hackathon/hackathon-2026-official`; Track 2 materials are under `track-2/`.
+- Official submission requires `docker-compose.yml`, `claims.json`, and `REPORT.md` at the repository root.
+- Judges run `docker compose up` and open the dashboard on `:3000`.
+- The official API service reads generated data from `./data/`; data must not be committed.
+- `claims.json` carries machine-readable numbers with intervals, confidence, basis, rationale, and optional fields.
 - This track is more oriented toward data analysis, visualization, and translating infrastructure signals into business outcomes.
 - The track emphasis is data storytelling.
 
@@ -81,9 +86,9 @@ The strongest solution shape is:
 
 **GPU job telemetry -> derived analytics -> business-layer claims -> named efficiency findings -> evidence-backed recommendations -> one-command dashboard -> MCP-powered insight workspace**
 
-The infrastructure should stay simple and local:
+The development infrastructure should stay simple and local, while preserving the official Docker Compose submission contract:
 
-**Mac laptop -> local Python analytics backend -> direct MantisGrid APIs and/or local cache -> Streamlit dashboard**
+**Mac laptop -> local Track 2 API/data tools -> dashboard on :3000 -> Docker Compose submission**
 
 The dashboard should help a user quickly understand:
 
@@ -107,7 +112,7 @@ Mac laptop host
   |
   +-- Local Python runtime
         |
-        +-- Python analytics backend
+        +-- Official API service / Python analytics backend
         |     |
         |     +-- MantisGrid MCP tool adapter
         |     +-- Direct MantisGrid API client if allowed
@@ -121,7 +126,7 @@ Mac laptop host
         |     +-- DuckDB or Polars
         |     +-- Cached metrics, events, costs, workloads, nodes
         |
-        +-- Streamlit dashboard on localhost
+        +-- Dashboard on localhost:3000
               |
               +-- Overview
               +-- Utilization
@@ -157,15 +162,15 @@ Dynamic dashboarding is about custom views from human intent. Inefficiency disco
 
 ## Runtime Environment
 
-Use the same basic runtime shape as Track 1:
+Use the official Track 2 runtime shape:
 
 - Mac laptop as host.
-- Local Python runtime.
-- Python implementation.
+- Local Python runtime for development.
+- Docker Compose for final submission and validation.
 - MCP tool access as a first-class data and agent-tool path.
-- Direct MantisGrid API client as a useful secondary path if allowed by final instructions.
+- Official API service and generated local data for deterministic ingestion, caching, and dashboard views.
 - DuckDB or Polars for local data shaping and repeated analysis.
-- Streamlit for the interactive dashboard.
+- Any dashboard stack is acceptable if it comes up with `docker compose up` and serves on `:3000`.
 
 Rationale:
 
@@ -1070,10 +1075,10 @@ This is a proposed shape only. The actual structure should adapt once the provid
 - What exact API endpoints and data objects are provided for Track 2?
 - What is the exact access path for the four-month GPU cluster dataset?
 - Are cost values provided directly, estimated, or expected to be calculated?
-- What fixed format is expected for headline numbers?
+- Which official `claims.json` fields should we prioritize beyond `team`?
 - What confidence language or uncertainty ranges do judges expect?
-- Which MCP tools are available, and is MCP required for the chatbot or agent deliverable?
-- What one-command dashboard startup command should be supported?
+- Which MCP tools should the dashboard/agent rely on versus direct API calls?
+- What frontend stack should satisfy `docker compose up` and dashboard-on-`:3000` fastest?
 - What dimensions are available: namespace, team, workload, service, job, node, GPU, cluster, region, node pool?
 - Are uptime and performance insights precomputed by MantisGrid or derived from raw telemetry?
 - How should headline-number ranges be formatted for judging?
@@ -1088,29 +1093,22 @@ This is a proposed shape only. The actual structure should adapt once the provid
 
 ## Near-Term Build Sequence
 
-1. Confirm Track 2 API surface, MCP tools, data objects, dimensions, judging criteria, and required fixed format for headline numbers.
-2. Create or reuse the local Python project skeleton with a one-command dashboard startup path.
-3. Build the MantisGrid MCP adapter for agent/chatbot access.
-4. Build direct API access only if final instructions allow it and it helps deterministic ingestion.
-5. Cache representative MCP/API responses in DuckDB or Polars.
+1. Copy or adapt official Track 2 compose/API/data structure into the Track 2 repo, preserving root-level `docker-compose.yml`, `claims.json`, and `REPORT.md`.
+2. Download raw data into the official data path and run `make prep`, `make generate`, and `make check-data`.
+3. Run the official API/notebook path with `make up` and inspect `starter/notebook.ipynb`.
+4. Choose the dashboard stack and ensure `docker compose up` serves it on `:3000`.
+5. Use the official API and MCP layer where useful, starting with the curated MCP tools in `mcp_layer/server.py`.
 6. Define derived analytics tables and the finding schema around job, user, GPU, utilization, memory, power, queue, outcome, cost, and confidence.
 7. Implement first-pass headline numbers as ranges: total opportunity, likely savings band, top waste categories, and confidence level.
-8. Implement the first finding engine for utilization, queueing, memory, power, and cost.
-9. Build the Streamlit dashboard shell.
-10. Implement the overview page around 30-second executive actionability, top findings, scores, and CFO-cut progress.
-11. Add drilldown from headline dollar figures to evidence tables and source jobs.
-12. Add utilization, performance, reliability, cost, and business-layer views.
-13. Add finding cards with facts, judgments, evidence, impact, confidence, and recommendations.
-14. Add a short report generator explaining what was found and how.
-15. Add trace logging for each finding.
-16. Define the dynamic dashboard spec schema, metric catalog, entity catalog, and supported view types.
-17. Implement spec validation and safe rejection/fallback behavior.
-18. Add an MCP-assisted chatbot or agent for data questions and drilldowns.
-19. Define CandidateFindingSpec and implement LLM-assisted inefficiency discovery over bounded summaries.
-20. Add validation and promotion logic from candidate findings to dashboard findings.
-21. Tune thresholds, ranking, templates, dynamic spec prompts, and discovery prompts based on data quality and judge-facing usefulness.
-22. Add optional LLM summarization only after the deterministic dashboard, spec rendering path, and discovery validation path are solid.
+8. Implement the three required tiles: where the money goes, where to cut, and what it costs if wrong.
+9. Add drilldown from headline dollar figures to evidence tables and source jobs.
+10. Add finding cards with facts, judgments, evidence, impact, confidence, and recommendations.
+11. Populate `claims.json` with only defensible investigated fields.
+12. Write `REPORT.md` explaining methods, findings, evidence, uncertainty, and AI/tooling disclosure.
+13. Add MCP-assisted chatbot or agent only where it improves data questions and drilldowns.
+14. Validate with `make validate CLAIMS=claims.json URL=http://localhost:3000`.
+15. Tune thresholds, ranking, templates, and discovery prompts based on data quality and judge-facing usefulness.
 
 ## Current Decision
 
-The Plan of Record for Track 2 is to build a local Python analytics dashboard and MCP-assisted data agent using MantisGrid API access, optional local caching, and Streamlit. The dashboard should identify a credible 20% savings opportunity as ranged headline numbers, label facts versus judgments, support drilldown from business impact to source data, and translate cluster inefficiencies into operational and CFO-readable recommendations.
+The Plan of Record for Track 2 is to build a Docker Compose-submittable dashboard on `:3000`, with `claims.json` and `REPORT.md`, using the official API/data/MCP assets. The dashboard should identify a credible 20% savings opportunity as ranged headline numbers, label facts versus judgments, support drilldown from business impact to source data, and translate cluster inefficiencies into operational and CFO-readable recommendations.

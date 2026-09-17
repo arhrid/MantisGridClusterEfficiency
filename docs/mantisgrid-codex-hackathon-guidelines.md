@@ -42,6 +42,19 @@ Examples of assumptions that may change:
 
 Codex should not begin coding from stale assumptions if fresh event instructions are available.
 
+## Team Coordination Rules
+
+There are four collaborators across both tracks: two on Track 1 and two on Track 2.
+
+Before committing or pushing, Codex should:
+
+- Check the working tree and current branch.
+- Fetch the latest remote state.
+- Rebase or merge normally before pushing.
+- Never force-push unless the whole team explicitly approves it.
+- Keep commits narrow and track-scoped.
+- Call out remote conflicts or rejected pushes before trying again.
+
 ## Working Rhythm
 
 Codex should work one phase at a time.
@@ -80,12 +93,13 @@ Codex should not commit or push unless explicitly asked.
 Default architecture:
 
 - Mac laptop host.
-- Local Python runtime on the Mac laptop. Add Docker packaging only if later required by the hackathon or useful for handoff.
-- Python backend.
+- Local Python runtime on the Mac laptop for development.
+- Track 2 final submission uses the official root-level `docker-compose.yml` and serves the dashboard on `:3000`.
+- Python backend and/or dashboard service.
 - MantisGrid MCP tools as the default agent/chatbot access path for Track 2.
-- Direct MantisGrid API access only if allowed and useful for deterministic ingestion or caching.
+- Official Track 2 API and generated local data for deterministic ingestion, caching, and dashboard views.
 - DuckDB or Polars for local caching and query.
-- Streamlit as the default UI.
+- Any dashboard stack is acceptable if `docker compose up` serves it on `:3000`.
 - Cloud LLM behind a provider-independent interface when needed.
 
 Avoid starting with:
