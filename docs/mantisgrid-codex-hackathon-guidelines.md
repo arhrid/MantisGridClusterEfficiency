@@ -10,7 +10,6 @@ The goal is to keep Codex focused, incremental, testable, and aligned with the c
 
 Before starting implementation work, Codex should read:
 
-- `mantisgrid-track1-rca-por.md`
 - `mantisgrid-track2-cluster-efficiency-por.md`
 - `mantisgrid-hackathon-implementation-plan.md`
 
@@ -83,8 +82,8 @@ Default architecture:
 - Mac laptop host.
 - Local Python runtime on the Mac laptop. Add Docker packaging only if later required by the hackathon or useful for handoff.
 - Python backend.
-- Direct MantisGrid API access as the default data path.
-- Optional MCP adapter only if useful or required.
+- MantisGrid MCP tools as the default agent/chatbot access path for Track 2.
+- Direct MantisGrid API access only if allowed and useful for deterministic ingestion or caching.
 - DuckDB or Polars for local caching and query.
 - Streamlit as the default UI.
 - Cloud LLM behind a provider-independent interface when needed.
@@ -287,7 +286,7 @@ Examples:
 
 When time is short:
 
-- Prefer direct API access over MCP unless MCP is required.
+- Prefer the MantisGrid MCP tools for Track 2 agent/chatbot work; use direct API access for deterministic ingestion only if allowed and faster.
 - Prefer Streamlit over React unless UI polish becomes a judged differentiator.
 - Prefer deterministic rules before LLM flourish.
 - Prefer traceability over cleverness.
@@ -305,4 +304,4 @@ Track 1 demo message:
 
 Track 2 demo message:
 
-> The system finds cluster inefficiencies, explains the evidence, and lets users ask dynamic follow-up questions that become validated dashboard views.
+> The system finds GPU cluster inefficiencies, explains the evidence behind each dollar figure, and lets users ask dynamic follow-up questions through validated MCP-backed dashboard views.
