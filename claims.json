@@ -1,0 +1,37 @@
+{
+  "team": "fleet-intelligence",
+
+  "recoverable_gpu_hours": {
+    "point": 230970,
+    "low": 107976,
+    "high": 313105,
+    "confidence": 0.55,
+    "basis": "Every job in the 74,849-job / 195-user MIT HPCA'22 trace (jobs = scheduler rows with matching DCGM telemetry) is assigned exactly one waste category, in priority order: node hardware fault > never-computed failure > wallclock kill > slow cancellation (CANCELLED jobs held 4+ hours before the user cancelled) > GPU-not-needed (COMPLETED at 0% SM utilization) > idle interactive session (0% SM utilization). No GPU-hour is counted in more than one category, and every dollar is priced against measured DCGM execution time ($2.50/GPU-hour), never allocated/held time — a job that never touched the GPU costs $0 in this model regardless of how long it sat broken. 'Fact' categories (hardware faults, scheduler wallclock kills = 107,976 GPU-h) form the low bound. 'Judgment' categories (slow cancellations, zero-utilization completions, idle interactive sessions = 178,861 + 12,299 + 13,967 = 205,127 GPU-h) are each confidence-weighted (0.6 / 0.65 / 0.55) into the point estimate and taken at face value for the high bound. The point estimate is dominated by the slow-cancellation call, which is the single biggest judgment call in this analysis — see cancelled_rationale."
+  },
+  "recoverable_usd": { "point": 577425, "low": 269941, "high": 782761 },
+
+  "cancelled_is_waste": false,
+  "cancelled_rationale": "CANCELLED jobs (203,054 measured GPU-hours, 34.3% of all compute, 9,290 jobs) are NOT treated as blanket waste: a researcher killing a bad run within minutes and resubmitting with fixed arguments is healthy iteration, not waste, and blaming it as such would make the dashboard actively wrong for the majority of cancellations. The actionable subset is the 3,050 CANCELLED jobs held for 4+ hours before the user cancelled — 178,861 GPU-hours of excess hold time, priced as 'slow cancellation of idle jobs' and included in the recoverable estimate above. That subset, not the full CANCELLED bucket, is what a 4h idle-notification policy would actually recover.",
+
+  "node_triage": [
+    {
+      "node": "r7317916-n172107",
+      "window": 0,
+      "cause": "hardware",
+      "reasoning": "90.7% failure rate in the densest 48-hour window (146 of 161 jobs), 10 distinct users, 99% sharing exit code 1. The same 10 users fail only 14.8% of the time on every other node they touch (6.12x their own baseline) — ruling out user error and pointing at this node specifically.",
+      "verdict": "act"
+    },
+    {
+      "node": "r2215649-n410412",
+      "window": 0,
+      "cause": "hardware",
+      "reasoning": "98.5% failure rate in its densest 48h window, 197/201 failures sharing exit code 2. Affected users fail 26.1% elsewhere (3.77x baseline).",
+      "verdict": "act"
+    }
+  ],
+
+  "hardware_attributable_failures": 146,
+  "hardware_attributable_rationale": "Jobs in the 48h burst window on r7317916-n172107 where same-exit-code concentration (99%) across 10 distinct users, combined with those same users' much lower (14.8%) failure rate elsewhere, rules out user code as the cause.",
+
+  "ai_disclosure": "Built with Claude Code (Sonnet 5). The data pipeline (backend/analysis.py), API (backend/views.py, backend/app.py), and React dashboard (frontend/) were AI-generated end to end from the raw MIT HPCA'22 CSVs and the Project-overview.md build spec, under direct human review and iteration for methodology (waste-category priority order, dollar-basis decisions, node/array/user detection thresholds). The dashboard's own numbers are still derived directly from data/raw/scheduler_data.csv and data/raw/dcgm.csv rather than from the MantisGrid API's findings, but the real MantisGrid facsimile API (api/, from github.com/MantisGridAI/hackathon-2026-official) now runs as a service (mantisgrid-api, :8001) built from the checksum-verified data/prepped and data/synthetic tables, and the dashboard's summary card cross-checks its own completed-work percentage against that API's /v1/efficiency/summary at startup (16.96% vs. 16.97% -- consistent)."
+}

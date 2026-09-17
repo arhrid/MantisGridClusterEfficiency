@@ -1,70 +1,104 @@
-# MantisGrid Cluster Efficiency
+# Fleet Intelligence — GPU Cluster Efficiency Dashboard
 
-Barebones project repository for the MantisGrid Hackathon Track 2: GPU Cluster Efficiency.
+Answers: *"The CFO has been told to cut GPU spend 20%. Where should she cut,
+and what breaks if she's wrong?"*
 
-## Goal
+See `Project-overview.md` for the original build spec and `REPORT.md` for the
+findings writeup. `claims.json` has the machine-readable numbers. Earlier
+team planning docs are preserved in `docs/` (`original-planning-README.md`,
+`mantisgrid-hackathon-implementation-plan.md`,
+`mantisgrid-track2-cluster-efficiency-por.md`,
+`mantisgrid-codex-hackathon-guidelines.md`).
 
-Build an interactive GPU cluster-efficiency dashboard that helps operators understand cluster behavior, identify inefficiencies, and connect telemetry signals to operational and business impact.
+## AI disclosure
 
-The project is currently in planning mode. The challenge slide describes the dataset and MCP/API surface, but the dataset, credentials, and final access instructions are not present in this checkout yet.
+Built with **Claude Code** (Sonnet 5), used as a coding agent for the full
+stack: the data pipeline and waste-category analysis (`backend/analysis.py`),
+the FastAPI backend (`backend/views.py`, `backend/app.py`), the React
+dashboard (`frontend/`), and integrating the organizers' MantisGrid facsimile
+API (`api/`, from `github.com/MantisGridAI/hackathon-2026-official`) as a
+running service, including the cross-check between our independently-derived
+numbers and its `/v1/efficiency/summary` endpoint. No other AI models or
+agent frameworks were used. All methodology decisions (waste-category
+priority order, dollar-basis choices, node/array/user detection thresholds,
+the `CANCELLED`-is-not-waste stance) were directed and reviewed by the team,
+not left to the model's default judgment — see `claims.json`'s `*_rationale`
+fields and `REPORT.md` for the reasoning behind each one.
 
-## Expected Inputs
+## Run it
 
-- Four months of real GPU cluster data
-- 74,849 jobs, 195 users, and 594,000 GPU-hours
-- Per-job GPUs, utilization, memory, power, queue, and outcome data
-- MantisGrid AI API output with 24 rules, 11,979 findings, and root-cause analysis
-- MantisGrid AI MCP server exposing the API as agent tools
-- Metrics, events, workload metadata, node metadata, and accelerator metadata where available
-- Cost data or cost estimates where available
-- Business-layer records labeled as fact or judgment
+### Docker (recommended)
 
-## Planned Shape
+```bash
+docker compose up --build
+```
 
-- Python analytics backend
-- One-command local dashboard startup
-- MCP-backed chatbot or agent for exploratory analysis
-- Direct MantisGrid API client if final instructions allow it
-- DuckDB or Polars for local caching and derived analytics
-- Streamlit dashboard for local interactive exploration
-- Local Python runtime, with Docker packaging only if final instructions require it
+Then open http://localhost:3000. The `api` service (FastAPI, port 8000)
+loads `data/raw/scheduler_data.csv` and `data/raw/dcgm.csv` once at startup
+and serves everything from memory; the `dashboard` service (React, built and
+served via nginx on port 3000) proxies `/api/*` to it. A third service,
+`mantisgrid-api` (port 8001), runs the real MantisGrid facsimile API (Layer A
+findings/causal/neighbor/rules, Layer B efficiency/waste/recommendations)
+against the checksummed `data/prepped/` and `data/synthetic/` tables — see
+`data/README.md`. It runs alongside the dashboard's own backend rather than
+replacing it; the dashboard's numbers are computed independently from the raw
+CSVs, not sourced from it yet.
 
-## Initial Dashboard Areas
+Verified end-to-end with `docker compose up --build` — all three services
+come up clean (`:3000` → 200, `:8000/api/summary` → real numbers,
+`:8001/health` → `{"status":"ok","findings":11979,"resources":77399}`).
 
-- Overview
-- Utilization
-- Performance
-- Reliability and uptime
-- Cost
-- Business layer
-- Findings and recommendations
+To regenerate the checksummed data yourself: `docker compose run --rm prep`
+then `docker compose run --rm generate` (see `data/README.md`).
 
-## Deliverables
+### Manual dev mode
 
-- Dashboard that comes up with one command
-- Fixed-format headline numbers with ranges, not single-point guesses
-- Short report explaining what was found and how
-- Drilldown from dollar figures to supporting data
-- Confidence labels for claims and recommendations
+```bash
+# backend
+cd backend
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app:app --host 0.0.0.0 --port 8000
 
-## Current Status
+# frontend (separate terminal)
+cd frontend
+npm install
+npm run dev   # http://localhost:3000, proxies /api to :8000
+```
 
-- Repository initialized
-- Planning documents are in `docs/`
-- Dataset, credentials, MCP server access, and API access are pending in this checkout
-- Implementation has not started
+## Layout
 
-## Next Steps
+```
+data/raw/           raw MIT HPCA'22 CSVs (scheduler_data.csv, dcgm.csv)
+data/prepped/       jobs.parquet, gpus.parquet (from `prep`, checksummed)
+data/synthetic/     findings.json, resources.parquet, edges.parquet (from
+                    `generate`, checksummed)
+backend/
+  analysis.py       loads the CSVs, derives the jobs/gpus tables, runs
+                    node/array/user/waste-category detection
+  views.py          shapes Analysis -> JSON (summary, waterfall, waste
+                    breakdown, recommendations, node/array/user triage)
+  app.py            FastAPI routes, computed once at startup and cached
+frontend/
+  src/views/        CFOView, SREView, RiskView, UsersView (one per tab)
+  src/components/   StatCard, DrilldownPanel, JobsTable, JobDetail, charts/
+api/                the real MantisGrid facsimile API (port 8001 here)
+scripts/            prep_data.py, checksum_data.py
+bin/                the `generate` binaries (Linux amd64/arm64)
+starter/            organizers' notebook + mgai_client.py
+mcp_layer/          MCP server over the MantisGrid API (not wired up yet)
+claims.json         machine-readable numbers (recoverable range, node
+                    triage, cancelled-is-waste stance)
+REPORT.md           findings writeup
+```
 
-1. Confirm final hackathon instructions, dataset format, MCP/API access, credentials, and judging criteria.
-2. Add a minimal local Python project skeleton.
-3. Implement a file-backed, MCP-backed, or API-backed data ingestion stub.
-4. Build the first deterministic dashboard views.
-5. Add fixed-format headline numbers, confidence ranges, and business-layer labels.
-6. Add named efficiency findings and recommendations.
+## What's not built (out of scope for this pass)
 
-## Docs
-
-- `docs/mantisgrid-track2-cluster-efficiency-por.md`
-- `docs/mantisgrid-hackathon-implementation-plan.md`
-- `docs/mantisgrid-codex-hackathon-guidelines.md`
+The real MantisGrid API (`api/`, port 8001) and its verified data
+(`data/prepped/`, `data/synthetic/findings.json`) are now present and
+checksummed against `data/checksums.txt`, but the dashboard itself still
+computes its numbers independently from the raw CSVs rather than sourcing
+them from that API or from `findings.json`. Wiring the dashboard's
+recommendations/drill-down to the real findings, and the MCP layer
+(`mcp_layer/`), were out of scope for this pass (dashboard drilldown first,
+chatbot/API-sourced findings later, per project decision).
