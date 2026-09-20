@@ -16,7 +16,7 @@ Workspace update:
 - Remote: `https://github.com/arhrid/MantisGridClusterEfficiency.git`.
 - Repo currently contains planning docs only; no implementation has started yet.
 - Runtime decision: develop locally where useful, but final Track 2 judging requires root-level Docker Compose and a dashboard served on `:3000`.
-- Latest Track 2 event details are captured from `docs/IMG_7072.jpg`: four months of GPU-cluster data, 74,849 jobs, 195 users, 594,000 GPU-hours, MantisGrid API insights, MCP server tooling, and judging emphasis on data storytelling.
+- Latest Track 2 event details (recorded from the challenge slide) are captured in `docs/mantisgrid-track2-cluster-efficiency-por.md`: four months of GPU-cluster data, 74,849 jobs, 195 users, 594,000 GPU-hours, MantisGrid API insights, MCP server tooling, and judging emphasis on data storytelling.
 - Official repo cloned at `/Users/benchong/Work/Hackathon/hackathon-2026-official`; Track 2 source of truth is `track-2/`.
 
 Current docs:
